@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
-
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
+# from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak
+from starkware.cairo.common.hash import hash2
 
 from openzeppelin.token.erc721.library import ERC721
 # from openzeppelin.introspection.erc165.library import ERC165
+
 
 @constructor
 func constructor{
@@ -171,3 +173,28 @@ func mint{
     ERC721._mint(to, tokenId)
     return ()
 end
+
+#
+# Internal functions
+#
+
+@storage_var
+func tokenId_high() -> (res : felt):
+end
+
+@view
+func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(account: felt, tokenId: Uint256) -> (pedersen_hash: felt):
+
+    # let tokenId_felt = tokenId.low + tokenId.high * 2 ** 128
+    tokenId_high.write(tokenId.high * 2 ** 128)
+    let (high) = tokenId_high.read()
+    let tokenId_felt = high + tokenId.low
+    let (pedersen_hash) = hash2{hash_ptr=pedersen_ptr}(tokenId_felt, account)
+
+    return (pedersen_hash)
+end
+
+
+
+
