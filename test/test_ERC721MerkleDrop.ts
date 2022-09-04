@@ -43,23 +43,30 @@ describe("My Test", function () {
             console.log(predeployedAccounts[i].address);
             console.log(leaves[i]);
         }
-        console.log(leaves);
+        console.log("leaves:", leaves);
 
         // Root
-        const root = generate_merkle_root(leaves);
-        console.log(root);
+        const merkle_root = generate_merkle_root(leaves);
+        console.log("merkle root:", merkle_root);
 
         // Merkle proof
         const proof = generate_merkle_proof(leaves, 3);
-        console.log(proof);
+        console.log("proof", proof);
         //################################################################################""
 
 
-        // const contractFactory = await starknet.getContractFactory("ERC721MerkleDrop");
-        // const contract = await contractFactory.deploy();
-        // console.log(contract.address)
+        const contractFactory = await starknet.getContractFactory("ERC721MerkleDrop");
+        const contract = await contractFactory.deploy({ root: merkle_root }); // pass hex
+        console.log("contract address:", contract.address)
         // const account1 = await starknet.deployAccount("OpenZeppelin");
         // console.log("----------------", account1)
+
+        const {root} = await contract.call("getRoot"); // return ...n
+        console.log("root:", root);
+
+
+        const {computedHash} = await contract.call("processProof", {proof: ["0x2256466bab472ddc7c5876b7464029e98263096b2b30dbecf33c2700e4b83"], leaf: "0x56648745fd41c2f9ea4593a964c48c4d3d81813901367921abb4e58811819ae", index: 0}); 
+        console.log("computedHash:", computedHash);
 
         //################################################################################""
         // const { name } = await contract.call("name");
@@ -74,7 +81,8 @@ describe("My Test", function () {
 
         //################################################################################""
         // await contract.invoke("mint", {to: predeployedAccounts[0].address, tokenId: {high:77, low: 0}})
-        // const { owner } = await contract.call("ownerOf", {token_id: {high:77, low: 0}});
+        // const { owner } = await contract.call("ownerOf", {token_id: {high:77, low: 0}}); // return ...n
+        // console.log("owner:", owner)
         // console.log("0x" + owner.toString(16));
         // expect(predeployedAccounts[0].address).to.equal("0x" + owner.toString(16));
 

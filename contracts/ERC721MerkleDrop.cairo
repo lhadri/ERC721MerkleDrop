@@ -9,13 +9,30 @@ from openzeppelin.token.erc721.library import ERC721
 # from openzeppelin.introspection.erc165.library import ERC165
 
 
+@storage_var
+func merkle_root() -> (res : felt):
+end
+
+@view
+func getRoot{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }() -> (root: felt):
+    let (root) = merkle_root.read()
+    return (root=root)
+end
+
+
+
 @constructor
 func constructor{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
-    }():
+    }(root: felt):
     ERC721.initializer('MyToken', 'MTK')
+    merkle_root.write(root)
     return ()
 end
 
@@ -196,42 +213,40 @@ end
 
 
 # https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol
-# * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree
-#      * defined by `root`. For this, a `proof` must be provided, containing
-#      * sibling hashes on the branch from the leaf to the root of the tree. Each
-#      * pair of leaves and each pair of pre-images are assumed to be sorted.
 @view
 func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(leaf: felt, proof: felt*) -> (bool: felt):
-    let (res) = processProof(leaf, proof)
+    }(leaf: felt, proof_len: felt, proof: felt*) -> (bool: felt):
+    let (res) = processProof(proof_len, proof, leaf, 0)
+    let (root) = merkle_root.read()
     if res == root:
         return (bool=1)
-    else:
-        return (bool=0)
+    end
+
+    return (bool=0)
+
 end
 
-#  @dev Returns the rebuilt hash obtained by traversing a Merkle tree up
-#      * from `leaf` using `proof`. A `proof` is valid if and only if the rebuilt
-#      * hash matches the root of the tree. When processing the proof, the pairs
-#      * of leafs & pre-images are assumed to be sorted.
-@view
+
+@storage_var
+func tempHash() -> (res : felt):
+end
+
+
+# How to pass proof to test as argument ?
+@external
 func processProof{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(leaf: felt, proof: felt*) -> (computedHash: felt):
-    let computedHash = leaf
-    for (uint256 i = 0; i < proof.length; i++) {
-        computedHash = _hashPair(computedHash, proof[i]);
-    }
+    }(proof_len: felt, proof: felt*, leaf: felt, index: felt) -> (computedHash: felt):
 
-    return (computedHash=computedHash)
+    if proof_len == 0:
+        let (computedHash) = tempHash.read()
+        return (computedHash)
+    end
+
+    # warning: leaf & proof order
+    let (hash) = hash2{hash_ptr=pedersen_ptr}(leaf, proof[index])
+    tempHash.write(hash)
+
+    let (res) = processProof(proof_len=proof_len-1, proof=proof+1, leaf=hash, index=index+1)
+
+    return (computedHash=res)
 end
-
-    function processProof(bytes32[] memory proof, bytes32 leaf) internal pure returns (bytes32) {
-        bytes32 computedHash = leaf;
-        for (uint256 i = 0; i < proof.length; i++) {
-            computedHash = _hashPair(computedHash, proof[i]);
-        }
-        return computedHash;
-    }
-
-
-

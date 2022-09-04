@@ -75,6 +75,23 @@
     },
     {
         "inputs": [],
+        "name": "getRoot",
+        "outputs": [
+            {
+                "name": "root",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "root",
+                "type": "felt"
+            }
+        ],
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
@@ -285,6 +302,59 @@
             }
         ],
         "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "leaf",
+                "type": "felt"
+            },
+            {
+                "name": "proof_len",
+                "type": "felt"
+            },
+            {
+                "name": "proof",
+                "type": "felt*"
+            }
+        ],
+        "name": "verify",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "proof_len",
+                "type": "felt"
+            },
+            {
+                "name": "proof",
+                "type": "felt*"
+            },
+            {
+                "name": "leaf",
+                "type": "felt"
+            },
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "name": "processProof",
+        "outputs": [
+            {
+                "name": "computedHash",
+                "type": "felt"
+            }
+        ],
         "type": "function"
     }
 ]
