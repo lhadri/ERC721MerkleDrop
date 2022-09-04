@@ -27,6 +27,7 @@
     "typescript": "^4.8.2"
   },
   "dependencies": {
+    "@starkware-industries/starkware-crypto-utils": "^0.0.2",
     "dotenv": "^16.0.2"
   }
 }

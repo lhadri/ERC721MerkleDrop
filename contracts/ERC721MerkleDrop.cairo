@@ -186,7 +186,7 @@ end
 func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(account: felt, tokenId: Uint256) -> (pedersen_hash: felt):
 
-    # let tokenId_felt = tokenId.low + tokenId.high * 2 ** 128
+    # let tokenId_felt = tokenId.low + tokenId.high * 2 ** 128  (not working: issues coming from Hardhat plugin)
     tokenId_high.write(tokenId.high * 2 ** 128)
     let (high) = tokenId_high.read()
     let tokenId_felt = high + tokenId.low
@@ -195,6 +195,43 @@ func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return (pedersen_hash)
 end
 
+
+# * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree
+#      * defined by `root`. For this, a `proof` must be provided, containing
+#      * sibling hashes on the branch from the leaf to the root of the tree. Each
+#      * pair of leaves and each pair of pre-images are assumed to be sorted.
+@view
+func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(proof: felt*, root: felt, leaf: felt) -> (bool: felt):
+    let (res) = processProof(proof, leaf)
+    if res == root:
+        return (bool=1)
+    else:
+        return (bool=0)
+end
+
+#  @dev Returns the rebuilt hash obtained by traversing a Merkle tree up
+#      * from `leaf` using `proof`. A `proof` is valid if and only if the rebuilt
+#      * hash matches the root of the tree. When processing the proof, the pairs
+#      * of leafs & pre-images are assumed to be sorted.
+@view
+func processProof{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(proof: felt*, leaf: felt) -> (computedHash: felt):
+    let computedHash = leaf
+    for (uint256 i = 0; i < proof.length; i++) {
+        computedHash = _hashPair(computedHash, proof[i]);
+    }
+
+    return (computedHash=computedHash)
+end
+
+    function processProof(bytes32[] memory proof, bytes32 leaf) internal pure returns (bytes32) {
+        bytes32 computedHash = leaf;
+        for (uint256 i = 0; i < proof.length; i++) {
+            computedHash = _hashPair(computedHash, proof[i]);
+        }
+        return computedHash;
+    }
 
 
 

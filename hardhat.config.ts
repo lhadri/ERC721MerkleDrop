@@ -2,6 +2,7 @@
 import { HardhatUserConfig } from "hardhat/types";
 import "@shardlabs/starknet-hardhat-plugin";
 import "@nomiclabs/hardhat-ethers";
+import'@starkware-industries/starkware-crypto-utils';
 import * as dotenv from "dotenv";
 dotenv.config();
 
