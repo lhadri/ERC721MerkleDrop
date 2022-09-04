@@ -1,6 +1,13 @@
 const starknet = require("starknet");
-import {pedersen} from './signature'
-
+import {
+	Contract,
+	defaultProvider,
+	ec,
+	json,
+	number,
+	hash,
+  } from "starknet";
+  
 
 
 
@@ -8,15 +15,8 @@ function get_next_level(level) {
 	var next_level, node;
 	next_level = [];
 
-	for (var i = 0, _pj_a = level.length; i < _pj_a; i += 2) {
-		node = 0;
-
-		if (level[i] < level[i + 1]) {
-			node = starknet.hash.pedersen([level[i], level[i + 1]]);
-		} else {
-			node = starknet.hash.pedersen([level[i + 1], level[i]]);
-		}
-
+	for (var i = 0; i < level.length; i += 2) {
+		node = pedersenHash([level[i], level[i + 1]]);
 		next_level.push(node);
 	}
 
@@ -30,14 +30,10 @@ function generate_proof_helper(level, index, proof) {
 		return proof;
 	}
 
-	if (level.length % 2 !== 0) {
-		level.push(0);
-	}
-
 	next_level = get_next_level(level);
 	index_parent = 0;
 
-	for (var i = 0, _pj_a = level.length; i < _pj_a; i += 1) {
+	for (var i = 0; i < level.length; i += 1) {
 		if (i === index) {
 			index_parent = Math.floor(i / 2);
 
@@ -52,51 +48,43 @@ function generate_proof_helper(level, index, proof) {
 	return generate_proof_helper(next_level, index_parent, proof);
 }
 
-function generate_merkle_proof(values, index) {
+export function generate_merkle_proof(values, index) {
 	return generate_proof_helper(values, index, []);
 }
 
-function generate_merkle_root(values) {
+export function generate_merkle_root(leaves) {
 	var next_level;
 
-	if (values.length === 1) {
-		return values[0];
+	if (leaves.length === 1) {
+		return leaves[0];
 	}
 
-	if (values.length % 2 !== 0) {
-		values.append(0);
-	}
-
-	next_level = get_next_level(values);
+	next_level = get_next_level(leaves);
 	return generate_merkle_root(next_level);
 }
 
-const getLeaf = (recipient, amount) => {
-	const leaf = starknet.hash.pedersen([recipient, amount]);
+
+
+const getLeaf = (tokenId, account) => {
+	const leaf = pedersenHash([tokenId, account]);
 	return leaf;
 };
 
-const getLeaves = (recipients, amounts) => {
-	let values = [];
-	for (let index = 0; index < recipients.length; index++) {
-		const leaf = getLeaf(recipients[index], amounts[index]);
-		const value = [leaf, recipients[index], amounts[index]];
-		values.push(value);
+export function getLeaves(tokenIds, accounts){
+	let leaves = [];
+	for (let index = 0; index < accounts.length; index++) {
+		const leaf = getLeaf(tokenIds[index], accounts[index]);
+		leaves.push(leaf);
 	}
-
-	if (values.length % 2 != 0) {
-		const last_value = [0, 0, 0];
-		values.push(last_value);
-	}
-	return values;
+	return leaves;
 };
 
 
-// To delete
-// export const pedersenHash = (data) => {
-// 	return Buffer.from(starknet.hash.pedersen([data, 0]), "hex");
-// };
-
+// input elements as strings
 export function pedersenHash(input) {
-	return pedersen(input);
+	var e1 = BigInt(input[0])
+	var e2 = BigInt(input[1])
+
+	return hash.pedersen([e1, e2])
 };
+

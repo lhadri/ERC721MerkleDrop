@@ -3,7 +3,6 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
-# from starkware.cairo.common.cairo_keccak.keccak import keccak, finalize_keccak
 from starkware.cairo.common.hash import hash2
 
 from openzeppelin.token.erc721.library import ERC721
@@ -196,14 +195,15 @@ func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 end
 
 
+# https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol
 # * @dev Returns true if a `leaf` can be proved to be a part of a Merkle tree
 #      * defined by `root`. For this, a `proof` must be provided, containing
 #      * sibling hashes on the branch from the leaf to the root of the tree. Each
 #      * pair of leaves and each pair of pre-images are assumed to be sorted.
 @view
 func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(proof: felt*, root: felt, leaf: felt) -> (bool: felt):
-    let (res) = processProof(proof, leaf)
+    }(leaf: felt, proof: felt*) -> (bool: felt):
+    let (res) = processProof(leaf, proof)
     if res == root:
         return (bool=1)
     else:
@@ -216,7 +216,7 @@ end
 #      * of leafs & pre-images are assumed to be sorted.
 @view
 func processProof{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(proof: felt*, leaf: felt) -> (computedHash: felt):
+    }(leaf: felt, proof: felt*) -> (computedHash: felt):
     let computedHash = leaf
     for (uint256 i = 0; i < proof.length; i++) {
         computedHash = _hashPair(computedHash, proof[i]);

@@ -1,24 +1,66 @@
 import { expect } from "chai";
 import { starknet } from "hardhat";
-import { pedersenHash } from './MerkleUtils';
+import { pedersenHash, getLeaves, generate_merkle_root, generate_merkle_proof } from './MerkleUtils';
+import { ethers } from "ethers";
+import {
+	Contract,
+	defaultProvider,
+	ec,
+	json,
+	number,
+	hash,
+  } from "starknet";
 
 
 describe("My Test", function () {
     it("should work with arrays", async function () {
         // console.log("devnet restart.................")
         // await starknet.devnet.restart()
-        
+
 
         // before to deploy, compute the root of the tree
-        // const x = pedersen([1,1])
-        const x = pedersenHash([1,1])
-
-        console.log("---", x)
-
-
-        const contractFactory = await starknet.getContractFactory("ERC721MerkleDrop");
-        const contract = await contractFactory.deploy();
         
+        //################################################################################""
+        // Addresses
+        const predeployedAccounts = await starknet.devnet.getPredeployedAccounts()
+        const predeployedAddresses = []
+        for (let i = 0; i < predeployedAccounts.length; i++) {
+            predeployedAddresses.push(predeployedAccounts[i].address);
+        }
+
+        // Token ids
+        const tokenIds = []
+        for (let i = 0; i < predeployedAccounts.length; i++) {
+            tokenIds.push((i+1).toString());
+        }
+
+        // Leaves
+        const leaves = getLeaves(tokenIds, predeployedAddresses);
+
+        // prompt
+        for (let i = 0; i < predeployedAccounts.length; i++) {
+            console.log(tokenIds[i]);
+            console.log(predeployedAccounts[i].address);
+            console.log(leaves[i]);
+        }
+        console.log(leaves);
+
+        // Root
+        const root = generate_merkle_root(leaves);
+        console.log(root);
+
+        // Merkle proof
+        const proof = generate_merkle_proof(leaves, 3);
+        console.log(proof);
+        //################################################################################""
+
+
+        // const contractFactory = await starknet.getContractFactory("ERC721MerkleDrop");
+        // const contract = await contractFactory.deploy();
+        // console.log(contract.address)
+        // const account1 = await starknet.deployAccount("OpenZeppelin");
+        // console.log("----------------", account1)
+
         //################################################################################""
         // const { name } = await contract.call("name");
         // const { symbol } = await contract.call("symbol");
@@ -29,14 +71,7 @@ describe("My Test", function () {
         //################################################################################""
 
 
-        // console.log(contract.address)
-        // const account1 = await starknet.deployAccount("OpenZeppelin");
-        //################################################################################""
-        // const predeployedAccounts = await starknet.devnet.getPredeployedAccounts()
-        // console.log(predeployedAccounts[0].address)
-        // console.log("----------------", account1)
-        //################################################################################""
-     
+
         //################################################################################""
         // await contract.invoke("mint", {to: predeployedAccounts[0].address, tokenId: {high:77, low: 0}})
         // const { owner } = await contract.call("ownerOf", {token_id: {high:77, low: 0}});
