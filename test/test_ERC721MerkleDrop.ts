@@ -49,8 +49,8 @@ describe("My Test", function () {
         const merkle_root = generate_merkle_root(leaves);
         console.log("merkle root:", merkle_root);
 
-        // Merkle proof
-        const proof = generate_merkle_proof(leaves, 3);
+        // Merkle proof corresponding to leaf at index 2
+        const proof = generate_merkle_proof(leaves, 2);
         console.log("proof", proof);
         //################################################################################""
 
@@ -65,7 +65,7 @@ describe("My Test", function () {
         console.log("root:", root);
 
 
-        const {computedHash} = await contract.call("processProof", {proof: ["0x2256466bab472ddc7c5876b7464029e98263096b2b30dbecf33c2700e4b83"], leaf: "0x56648745fd41c2f9ea4593a964c48c4d3d81813901367921abb4e58811819ae", index: 0}); 
+        const {computedHash} = await contract.call("processProof", {proof: proof, leaf: leaves[2], proof_idx: 0, leaf_idx:2}); 
         console.log("computedHash:", computedHash);
 
         //################################################################################""

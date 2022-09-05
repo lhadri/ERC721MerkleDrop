@@ -4,6 +4,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 from starkware.cairo.common.hash import hash2
+from starkware.cairo.common.math import unsigned_div_rem
 
 from openzeppelin.token.erc721.library import ERC721
 # from openzeppelin.introspection.erc165.library import ERC165
@@ -213,18 +214,18 @@ end
 
 
 # https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol
-@view
-func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(leaf: felt, proof_len: felt, proof: felt*) -> (bool: felt):
-    let (res) = processProof(proof_len, proof, leaf, 0)
-    let (root) = merkle_root.read()
-    if res == root:
-        return (bool=1)
-    end
+# @view
+# func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+#     }(leaf: felt, proof_len: felt, proof: felt*) -> (bool: felt):
+#     let (res) = processProof(proof_len, proof, leaf, 0, )
+#     let (root) = merkle_root.read()
+#     if res == root:
+#         return (bool=1)
+#     end
 
-    return (bool=0)
+#     return (bool=0)
 
-end
+# end
 
 
 @storage_var
@@ -232,21 +233,26 @@ func tempHash() -> (res : felt):
 end
 
 
-# How to pass proof to test as argument ?
 @external
 func processProof{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(proof_len: felt, proof: felt*, leaf: felt, index: felt) -> (computedHash: felt):
+    }(proof_len: felt, proof: felt*, leaf: felt, proof_idx: felt, leaf_idx: felt) -> (computedHash: felt):
 
     if proof_len == 0:
         let (computedHash) = tempHash.read()
         return (computedHash)
     end
 
-    # warning: leaf & proof order
-    let (hash) = hash2{hash_ptr=pedersen_ptr}(leaf, proof[index])
-    tempHash.write(hash)
+    let (dividend, remainder) = unsigned_div_rem(leaf_idx, 2)
+    if remainder == 0:
+        let (hash) = hash2{hash_ptr=pedersen_ptr}(leaf, proof[proof_idx])
+        tempHash.write(hash)
+    else:
+        let (hash) = hash2{hash_ptr=pedersen_ptr}(proof[proof_idx], leaf)
+        tempHash.write(hash)
+    end
 
-    let (res) = processProof(proof_len=proof_len-1, proof=proof+1, leaf=hash, index=index+1)
+    let (new_hash) = tempHash.read()
+    let (res) = processProof(proof_len=proof_len-1, proof=proof, leaf=new_hash, proof_idx=proof_idx+1, leaf_idx=dividend)
 
     return (computedHash=res)
 end

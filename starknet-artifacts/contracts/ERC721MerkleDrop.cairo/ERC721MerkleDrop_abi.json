@@ -307,31 +307,6 @@
     {
         "inputs": [
             {
-                "name": "leaf",
-                "type": "felt"
-            },
-            {
-                "name": "proof_len",
-                "type": "felt"
-            },
-            {
-                "name": "proof",
-                "type": "felt*"
-            }
-        ],
-        "name": "verify",
-        "outputs": [
-            {
-                "name": "bool",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "name": "proof_len",
                 "type": "felt"
             },
@@ -344,7 +319,11 @@
                 "type": "felt"
             },
             {
-                "name": "index",
+                "name": "proof_idx",
+                "type": "felt"
+            },
+            {
+                "name": "leaf_idx",
                 "type": "felt"
             }
         ],
