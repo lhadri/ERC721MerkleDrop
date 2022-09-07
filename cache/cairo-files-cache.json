@@ -1,6 +1,6 @@
 {
  "/home/lhadri/project/ERC721MerkleDrop/contracts/ERC721MerkleDrop.cairo": {
-  "contentHash": "e5c62df8b7bbb822407818906a96b115e96e95fd6cf58a73271a023fcc20bc23",
+  "contentHash": "5bf24d22e6146d9913e7e2937c3b7e95e8dbe279796fdcc7e5680fa418b63f35",
   "outputPath": "/home/lhadri/project/ERC721MerkleDrop/starknet-artifacts/contracts/ERC721MerkleDrop.cairo/ERC721MerkleDrop.json",
   "abiPath": "/home/lhadri/project/ERC721MerkleDrop/starknet-artifacts/contracts/ERC721MerkleDrop.cairo/ERC721MerkleDrop_abi.json"
  }

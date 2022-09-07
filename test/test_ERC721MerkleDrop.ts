@@ -3,70 +3,78 @@ import { starknet } from "hardhat";
 import { pedersenHash, getLeaves, generate_merkle_root, generate_merkle_proof } from './MerkleUtils';
 import { ethers } from "ethers";
 import {
-	Contract,
-	defaultProvider,
-	ec,
-	json,
-	number,
-	hash,
-  } from "starknet";
+    Contract,
+    defaultProvider,
+    ec,
+    json,
+    number,
+    hash,
+} from "starknet";
 
 
-describe("My Test", function () {
-    it("should work with arrays", async function () {
-        // console.log("devnet restart.................")
-        // await starknet.devnet.restart()
+describe("ERC721MerkleDrop", function () {
 
-
-        // before to deploy, compute the root of the tree
-        
-        //################################################################################""
-        // Addresses
+    it("should mint all elements", async function () {
+        // get accounts
         const predeployedAccounts = await starknet.devnet.getPredeployedAccounts()
         const predeployedAddresses = []
         for (let i = 0; i < predeployedAccounts.length; i++) {
             predeployedAddresses.push(predeployedAccounts[i].address);
         }
 
-        // Token ids
+        // get Token ids
         const tokenIds = []
-        for (let i = 0; i < predeployedAccounts.length; i++) {
-            tokenIds.push((i+1).toString());
-        }
+        // for (let i = 0; i < predeployedAccounts.length; i++) {
+        //     tokenIds.push((i + 1).toString());
+        // }
 
-        // Leaves
+        // 2^256 - 1 = 115792089237316195423570985008687907853269984665640564039457584007913129639935
+        // 2^128 - 1 = 340282366920938463463374607431768211455
+        // BigInt = It seems like there is no maximum limit
+        tokenIds[0] = "340282366920938463463374607431768211455"
+        tokenIds[1] = "340282366920938463463374607431768211454"
+        tokenIds[2] = "340282366920938463463374607431768211453"
+        tokenIds[3] = "340282366920938463463374607431768211452"
+
+        // compute leaves
         const leaves = getLeaves(tokenIds, predeployedAddresses);
 
-        // prompt
-        for (let i = 0; i < predeployedAccounts.length; i++) {
-            console.log(tokenIds[i]);
-            console.log(predeployedAccounts[i].address);
-            console.log(leaves[i]);
-        }
-        console.log("leaves:", leaves);
-
-        // Root
+        // compute root
         const merkle_root = generate_merkle_root(leaves);
-        console.log("merkle root:", merkle_root);
-
-        // Merkle proof corresponding to leaf at index 2
-        const proof = generate_merkle_proof(leaves, 2);
-        console.log("proof", proof);
-        //################################################################################""
+        // console.log("merkle root:", merkle_root);
 
 
+        // prompt
+        console.log("-----> Whitelisted accounts with their allowed NFTs to redeem <-----");
+        for (let i = 0; i < predeployedAccounts.length; i++) {
+            console.log(predeployedAccounts[i].address, ":", tokenIds[i]);
+        }
+
+
+        // prompt
+        // for (let i = 0; i < predeployedAccounts.length; i++) {
+        //     console.log(tokenIds[i]);
+        //     console.log(predeployedAccounts[i].address);
+        //     console.log(leaves[i]);
+        // }
+        // console.log("tokenIds:", tokenIds);
+        // console.log("leaves:", leaves);
+
+        //***************************************************************************************************** */
         const contractFactory = await starknet.getContractFactory("ERC721MerkleDrop");
         const contract = await contractFactory.deploy({ root: merkle_root }); // pass hex
-        console.log("contract address:", contract.address)
+        // console.log("contract address:", contract.address)
         // const account1 = await starknet.deployAccount("OpenZeppelin");
         // console.log("----------------", account1)
 
-        const {root} = await contract.call("getRoot"); // return ...n
-        console.log("root:", root);
+        // const {root} = await contract.call("getRoot"); // return ...n
+        // console.log("root:", root);
 
+        // test verify()
+        // await contract.call("verify", {proof: proof, leaf: leaves[leaf_index], proof_idx: 0, leaf_idx:leaf_index}); 
 
-        const {computedHash} = await contract.call("processProof", {proof: proof, leaf: leaves[2], proof_idx: 0, leaf_idx:2}); 
-        console.log("computedHash:", computedHash);
+        // test redeem()
+        // await contract.invoke("redeem", {proof: proof, account: predeployedAccounts[leaf_index].address, tokenId: {low: tokenIds[leaf_index], high:0}, leaf_idx: leaf_index}); 
 
         //################################################################################""
         // const { name } = await contract.call("name");
@@ -80,14 +88,14 @@ describe("My Test", function () {
 
 
         //################################################################################""
-        // await contract.invoke("mint", {to: predeployedAccounts[0].address, tokenId: {high:77, low: 0}})
-        // const { owner } = await contract.call("ownerOf", {token_id: {high:77, low: 0}}); // return ...n
+        // await contract.invoke("mint", {to: predeployedAccounts[leaf_index].address, tokenId: {high:0, low: tokenIds[leaf_index]}})
+        // const { owner } = await contract.call("ownerOf", {token_id: {low: tokenIds[leaf_index], high:0}}); // return ...n
         // console.log("owner:", owner)
         // console.log("0x" + owner.toString(16));
         // expect(predeployedAccounts[0].address).to.equal("0x" + owner.toString(16));
 
-        // await contract.invoke("mint", {to: predeployedAccounts[0].address, tokenId: {high:88, low: 0}})
-        // const { balance } = await contract.call("balanceOf", {owner: owner});
+        // await contract.invoke("mint", {to: predeployedAccounts[leaf_index].address, tokenId: {low: 88, high:0}})
+        // const { balance } = await contract.call("balanceOf", { owner: predeployedAccounts[leaf_index].address });
         // console.log(balance);
         //################################################################################""
 
@@ -97,12 +105,29 @@ describe("My Test", function () {
         // console.log("-------", pedersen_hash);
         //################################################################################""
 
+        //***************************************************************************************************** */
+        console.log("-----> Simulating minting.................................... <-----");
+        for (let i = 0; i < predeployedAccounts.length; i++) {
 
+            // Merkle proof corresponding to leaf at index i
+            const proof = generate_merkle_proof(leaves, i);
+            const leaf_index = i
+            console.log("Account", predeployedAccounts[leaf_index].address, "redeems token", tokenIds[i]);
+            await contract.invoke("redeem", { proof: proof, account: predeployedAccounts[leaf_index].address, tokenId: { low: tokenIds[leaf_index], high: 0 }, leaf_idx: leaf_index });
+            console.log("Token", tokenIds[i], "minted successfully");
+        };
 
-        // coulisse:
-        // list of persons that can redeem their tokens + give a proof to each person
-        // contract:
-        // let each person redeem its token by providing a proof that a contract can verify
+        
+
     });
+
+
+
 });
 
+
+
+
+
+// console.log("devnet restart.................")
+// await starknet.devnet.restart()

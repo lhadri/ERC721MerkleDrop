@@ -327,13 +327,35 @@
                 "type": "felt"
             }
         ],
-        "name": "processProof",
-        "outputs": [
+        "name": "verify",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
             {
-                "name": "computedHash",
+                "name": "proof_len",
+                "type": "felt"
+            },
+            {
+                "name": "proof",
+                "type": "felt*"
+            },
+            {
+                "name": "account",
+                "type": "felt"
+            },
+            {
+                "name": "tokenId",
+                "type": "Uint256"
+            },
+            {
+                "name": "leaf_idx",
                 "type": "felt"
             }
         ],
+        "name": "redeem",
+        "outputs": [],
         "type": "function"
     }
 ]
