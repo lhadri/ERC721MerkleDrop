@@ -74,18 +74,6 @@
         "type": "event"
     },
     {
-        "inputs": [],
-        "name": "getRoot",
-        "outputs": [
-            {
-                "name": "root",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
         "inputs": [
             {
                 "name": "root",
@@ -95,6 +83,23 @@
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "interfaceId",
+                "type": "felt"
+            }
+        ],
+        "name": "supportsInterface",
+        "outputs": [
+            {
+                "name": "success",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [],
@@ -265,69 +270,6 @@
             }
         ],
         "name": "safeTransferFrom",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "tokenId",
-                "type": "Uint256"
-            }
-        ],
-        "name": "mint",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "account",
-                "type": "felt"
-            },
-            {
-                "name": "tokenId",
-                "type": "Uint256"
-            }
-        ],
-        "name": "leaf",
-        "outputs": [
-            {
-                "name": "pedersen_hash",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "proof_len",
-                "type": "felt"
-            },
-            {
-                "name": "proof",
-                "type": "felt*"
-            },
-            {
-                "name": "leaf",
-                "type": "felt"
-            },
-            {
-                "name": "proof_idx",
-                "type": "felt"
-            },
-            {
-                "name": "leaf_idx",
-                "type": "felt"
-            }
-        ],
-        "name": "verify",
         "outputs": [],
         "type": "function"
     },

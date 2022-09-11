@@ -10,7 +10,6 @@ dotenv.config();
  * @type import('hardhat/config').HardhatUserConfig
  */
 const config: HardhatUserConfig = {
-    solidity: "0.6.12",
     starknet: {
         // dockerizedVersion: "0.9.1", // alternatively choose one of the two venv options below
         // uses (my-venv) defined by `python -m venv path/to/my-venv`
@@ -38,7 +37,7 @@ const config: HardhatUserConfig = {
             // dockerizedVersion: "<DEVNET_VERSION>",
 
             // optional devnet CLI arguments
-            args: ["--accounts" , "4"]
+            args: ["--accounts" , "8"] // number of random accounts to generate
         },
         hardhat: {}
     }

@@ -2,7 +2,6 @@
   "name": "erc721merkledrop",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/lhadri/ERC721MerkleDrop.git"
   },
-  "author": "",
+  "author": "lhadri",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/lhadri/ERC721MerkleDrop/issues"

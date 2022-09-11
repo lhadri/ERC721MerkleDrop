@@ -7,24 +7,12 @@ from starkware.cairo.common.hash import hash2
 from starkware.cairo.common.math import unsigned_div_rem
 
 from openzeppelin.token.erc721.library import ERC721
-# from openzeppelin.introspection.erc165.library import ERC165
+from openzeppelin.introspection.erc165.library import ERC165
 
 
 @storage_var
 func merkle_root() -> (res : felt):
 end
-
-@view
-func getRoot{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }() -> (root: felt):
-    let (root) = merkle_root.read()
-    return (root=root)
-end
-
-
 
 @constructor
 func constructor{
@@ -37,19 +25,16 @@ func constructor{
     return ()
 end
 
-#
-# Getters
-#
 
-# @view
-# func supportsInterface{
-#         syscall_ptr: felt*,
-#         pedersen_ptr: HashBuiltin*,
-#         range_check_ptr
-#     }(interfaceId: felt) -> (success: felt):
-#     let (success) = ERC165.supports_interface(interfaceId)
-#     return (success)
-# end
+@view
+func supportsInterface{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(interfaceId: felt) -> (success: felt):
+    let (success) = ERC165.supports_interface(interfaceId)
+    return (success)
+end
 
 @view
 func name{
@@ -167,28 +152,19 @@ end
 
 
 
-@external
 func mint{
         syscall_ptr: felt*,
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(to: felt, tokenId: Uint256):
-    # to debug
-    # let num1 : Uint256 = Uint256(low=66,high=0)
-    # assert tokenId = num1
     ERC721._mint(to, tokenId)
     return ()
 end
-
-#
-# Internal functions
-#
 
 @storage_var
 func tokenId_high() -> (res : felt):
 end
 
-@view
 func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(account: felt, tokenId: Uint256) -> (pedersen_hash: felt):
 
@@ -201,9 +177,6 @@ func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     return (pedersen_hash)
 end
 
-
-# https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/MerkleProof.sol
-@external
 func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(proof_len: felt, proof: felt*, leaf: felt, proof_idx: felt, leaf_idx: felt):
 
@@ -226,7 +199,6 @@ func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
 
     return ()
 end
-
 
 @external
 func redeem{

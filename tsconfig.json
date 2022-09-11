@@ -1,7 +1,6 @@
 {
-    "compilerOptions": {
-      // ... other settings
-      "allowJs": true
-    }
+  "compilerOptions": {
+    // ... other settings
+    "allowJs": true
   }
-  
+}

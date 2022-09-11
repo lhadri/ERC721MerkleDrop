@@ -1,15 +1,12 @@
-const starknet = require("starknet");
-import {
-	Contract,
-	defaultProvider,
-	ec,
-	json,
-	number,
-	hash,
-  } from "starknet";
-  
+import {hash} from "starknet";
 
+// input elements as strings
+function pedersenHash(input) {
+	var e1 = BigInt(input[0])
+	var e2 = BigInt(input[1])
 
+	return hash.pedersen([e1, e2])
+};
 
 function get_next_level(level) {
 	var next_level, node;
@@ -48,24 +45,7 @@ function generate_proof_helper(level, index, proof) {
 	return generate_proof_helper(next_level, index_parent, proof);
 }
 
-export function generate_merkle_proof(values, index) {
-	return generate_proof_helper(values, index, []);
-}
-
-export function generate_merkle_root(leaves) {
-	var next_level;
-
-	if (leaves.length === 1) {
-		return leaves[0];
-	}
-
-	next_level = get_next_level(leaves);
-	return generate_merkle_root(next_level);
-}
-
-
-
-const getLeaf = (tokenId, account) => {
+function getLeaf(tokenId, account) {
 	const leaf = pedersenHash([tokenId, account]);
 	return leaf;
 };
@@ -79,12 +59,17 @@ export function getLeaves(tokenIds, accounts){
 	return leaves;
 };
 
+export function generate_merkle_root(leaves) {
+	var next_level;
 
-// input elements as strings
-export function pedersenHash(input) {
-	var e1 = BigInt(input[0])
-	var e2 = BigInt(input[1])
+	if (leaves.length === 1) {
+		return leaves[0];
+	}
 
-	return hash.pedersen([e1, e2])
-};
+	next_level = get_next_level(leaves);
+	return generate_merkle_root(next_level);
+}
 
+export function generate_merkle_proof(values, index) {
+	return generate_proof_helper(values, index, []);
+}
