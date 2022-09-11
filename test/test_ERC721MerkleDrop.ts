@@ -10,31 +10,39 @@ import {
     number,
     hash,
 } from "starknet";
+import { randomAddress } from "starknet/dist/utils/stark";
+import { hexToDecimalString, toFelt } from "starknet/dist/utils/number";
+import { bnToUint256, Uint256 } from "starknet/dist/utils/uint256";
 
 
 describe("ERC721MerkleDrop", function () {
 
     it("should mint all elements", async function () {
-        // get accounts
+        // get random accounts
         const predeployedAccounts = await starknet.devnet.getPredeployedAccounts()
         const predeployedAddresses = []
         for (let i = 0; i < predeployedAccounts.length; i++) {
-            predeployedAddresses.push(predeployedAccounts[i].address);
+            predeployedAddresses.push(predeployedAccounts[i].address); // addresses seem to be felts
+        }
+        console.log("Accounts: ", predeployedAddresses)
+
+
+        // get random Token ids as felts
+        const tokenIds = []
+        for (let i = 0; i < predeployedAccounts.length; i++) {
+            tokenIds.push(toFelt(randomAddress()));
         }
 
-        // get Token ids
-        const tokenIds = []
-        // for (let i = 0; i < predeployedAccounts.length; i++) {
-        //     tokenIds.push((i + 1).toString());
-        // }
+        console.log("Token ids: ", tokenIds)
 
-        // 2^256 - 1 = 115792089237316195423570985008687907853269984665640564039457584007913129639935
-        // 2^128 - 1 = 340282366920938463463374607431768211455
+
+
+        // 115792089237316195423570985008687907853269984665640564039457584007913129639935 = 2^256 - 1
+        //   3618502788666131213697322783095070105623107215331596699973092056135872020480 = 2^251 + 17*2^192 = P-1  (felt needs 252 bits)
+        //   340282366920938463463374607431768211455                                      = 2^128 - 1
         // BigInt = It seems like there is no maximum limit
-        tokenIds[0] = "340282366920938463463374607431768211455"
-        tokenIds[1] = "340282366920938463463374607431768211454"
-        tokenIds[2] = "340282366920938463463374607431768211453"
-        tokenIds[3] = "340282366920938463463374607431768211452"
+        // So we have to generate 
+        
 
         // compute leaves
         const leaves = getLeaves(tokenIds, predeployedAddresses);
@@ -101,19 +109,24 @@ describe("ERC721MerkleDrop", function () {
 
         //################################################################################""
         // const x = predeployedAccounts[0].address
-        // const { pedersen_hash } = await contract.call("leaf", {account: x, tokenId: {high:0, low: 88}})
+        // const { pedersen_hash } = await contract.call("leaf", {account: toFelt("0x1"), tokenId: {low: BigInt("0"), high:BigInt("1")}})
         // console.log("-------", pedersen_hash);
         //################################################################################""
 
-        //***************************************************************************************************** */
         console.log("-----> Simulating minting.................................... <-----");
         for (let i = 0; i < predeployedAccounts.length; i++) {
 
             // Merkle proof corresponding to leaf at index i
-            const proof = generate_merkle_proof(leaves, i);
-            const leaf_index = i
+            let proof = generate_merkle_proof(leaves, i);
+            let leaf_index = i
             console.log("Account", predeployedAccounts[leaf_index].address, "redeems token", tokenIds[i]);
-            await contract.invoke("redeem", { proof: proof, account: predeployedAccounts[leaf_index].address, tokenId: { low: tokenIds[leaf_index], high: 0 }, leaf_idx: leaf_index });
+
+            // Transform token id felt value to be passed as uint256
+            let tokenId_uint256: Uint256 = bnToUint256(tokenIds[leaf_index]);
+            let low_part: bigint = tokenId_uint256.low;
+            let high_part: bigint = tokenId_uint256.high;
+
+            await contract.invoke("redeem", { proof: proof, account: predeployedAccounts[leaf_index].address, tokenId: { low: low_part, high: high_part }, leaf_idx: leaf_index });
             console.log("Token", tokenIds[i], "minted successfully");
         };
 
