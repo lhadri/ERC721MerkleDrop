@@ -37,7 +37,7 @@ const config: HardhatUserConfig = {
             // dockerizedVersion: "<DEVNET_VERSION>",
 
             // optional devnet CLI arguments
-            args: ["--accounts" , "8"] // number of random accounts to generate
+            args: ["--accounts" , "4"] // number of random accounts to generate
         },
         hardhat: {}
     }
