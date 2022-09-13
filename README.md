@@ -16,7 +16,7 @@
 
 ## Algorithm
 - The order of leaves is fixed before computing the merkle root.
-- To redeem, the provided proof (array of hashes) needs a leaf index as additional information so the program can know the order in which the hashes should be combined.
+- To redeem an NFT, the provided proof (array of hashes) needs a leaf index as additional information so the program can know the order in which the hashes should be combined.
 
 
 ## Setting up the environment (Windows11 + WSL2 + Ubuntu 20.04.5 LTS)
