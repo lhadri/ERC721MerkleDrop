@@ -7,6 +7,7 @@ import { bnToUint256, Uint256 } from "starknet/dist/utils/uint256";
 
 describe("ERC721MerkleDrop", function () {
     it("should mint all elements", async function () {
+
         // get random accounts
         const predeployedAccounts = await starknet.devnet.getPredeployedAccounts()
         const predeployedAddresses = []
@@ -27,6 +28,7 @@ describe("ERC721MerkleDrop", function () {
         // compute leaves
         const leaves = getLeaves(tokenIds, predeployedAddresses);
 
+
         // compute root
         const merkle_root = generate_merkle_root(leaves);
 
@@ -37,10 +39,12 @@ describe("ERC721MerkleDrop", function () {
             console.log(predeployedAccounts[i].address, ":", tokenIds[i]);
         }
 
+
         // deploy
         const contractFactory = await starknet.getContractFactory("ERC721MerkleDrop");
         const contract = await contractFactory.deploy({ root: merkle_root }); // pass hex
   
+        
         // test
         console.log("-----> Simulating minting.................................... <-----");
         for (let i = 0; i < predeployedAccounts.length; i++) {

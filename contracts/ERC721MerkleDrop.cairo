@@ -38,16 +38,13 @@ end
 
 func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(account: felt, tokenId: Uint256) -> (pedersen_hash: felt):
-
     let tokenId_felt = tokenId.low + tokenId.high * 2 ** 128  
     let (pedersen_hash) = hash2{hash_ptr=pedersen_ptr}(tokenId_felt, account)
-
     return (pedersen_hash)
 end
 
 func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     }(proof_len: felt, proof: felt*, leaf: felt, proof_idx: felt, leaf_idx: felt):
-
     if proof_len == 0:
         let (root) = merkle_root.read()
         with_attr error_message("Computed root is not valid ..."):
@@ -64,7 +61,6 @@ func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
     end
 
     verify(proof_len=proof_len-1, proof=proof, leaf=hash, proof_idx=proof_idx+1, leaf_idx=dividend)
-
     return ()
 end
 
@@ -74,7 +70,6 @@ func redeem{
         pedersen_ptr: HashBuiltin*,
         range_check_ptr
     }(proof_len: felt, proof: felt*, account: felt, tokenId: Uint256, leaf_idx: felt): 
-
     let (hash) = leaf(account, tokenId)
     verify(proof_len=proof_len, proof=proof, leaf=hash, proof_idx=0, leaf_idx=leaf_idx)
     mint(to=account, tokenId=tokenId)

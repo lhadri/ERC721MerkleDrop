@@ -2,10 +2,10 @@ import {hash} from "starknet";
 
 // input elements as strings
 function pedersenHash(input) {
-	var e1 = BigInt(input[0])
-	var e2 = BigInt(input[1])
+	var e1 = BigInt(input[0]);
+	var e2 = BigInt(input[1]);
 
-	return hash.pedersen([e1, e2])
+	return hash.pedersen([e1, e2]);
 };
 
 function get_next_level(level) {
