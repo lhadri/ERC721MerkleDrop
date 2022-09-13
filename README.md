@@ -11,7 +11,7 @@
 ## Preconditions
 
 - 2^n accounts
-- 2^n NFTs (token ids are felts)
+- 2^n NFTs
 - Each account is offered 1 NFT
 
 

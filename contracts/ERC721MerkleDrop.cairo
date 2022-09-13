@@ -10,6 +10,8 @@ from openzeppelin.token.erc721.library import ERC721
 from openzeppelin.introspection.erc165.library import ERC165
 
 
+#############################################################
+                                                            #
 @storage_var
 func merkle_root() -> (res : felt):
 end
@@ -24,6 +26,63 @@ func constructor{
     merkle_root.write(root)
     return ()
 end
+
+func mint{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(to: felt, tokenId: Uint256):
+    ERC721._mint(to, tokenId)
+    return ()
+end
+
+func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(account: felt, tokenId: Uint256) -> (pedersen_hash: felt):
+
+    let tokenId_felt = tokenId.low + tokenId.high * 2 ** 128  
+    let (pedersen_hash) = hash2{hash_ptr=pedersen_ptr}(tokenId_felt, account)
+
+    return (pedersen_hash)
+end
+
+func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(proof_len: felt, proof: felt*, leaf: felt, proof_idx: felt, leaf_idx: felt):
+
+    if proof_len == 0:
+        let (root) = merkle_root.read()
+        with_attr error_message("Computed root is not valid ..."):
+            assert root = leaf
+        end
+        return ()
+    end
+
+    let (dividend, remainder) = unsigned_div_rem(leaf_idx, 2)
+    if remainder == 0:
+        let (hash) = hash2{hash_ptr=pedersen_ptr}(leaf, proof[proof_idx])
+    else:
+        let (hash) = hash2{hash_ptr=pedersen_ptr}(proof[proof_idx], leaf)
+    end
+
+    verify(proof_len=proof_len-1, proof=proof, leaf=hash, proof_idx=proof_idx+1, leaf_idx=dividend)
+
+    return ()
+end
+
+@external
+func redeem{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(proof_len: felt, proof: felt*, account: felt, tokenId: Uint256, leaf_idx: felt): 
+
+    let (hash) = leaf(account, tokenId)
+    verify(proof_len=proof_len, proof=proof, leaf=hash, proof_idx=0, leaf_idx=leaf_idx)
+    mint(to=account, tokenId=tokenId)
+    return ()
+end
+                                                            #
+#############################################################
+
 
 
 @view
@@ -96,16 +155,15 @@ func isApprovedForAll{
     return (isApproved)
 end
 
-# @view
-# func tokenURI{
-#         syscall_ptr: felt*,
-#         pedersen_ptr: HashBuiltin*,
-#         range_check_ptr
-#     }(tokenId: Uint256) -> (tokenURI: felt):
-#     let (tokenURI) = ERC721.token_uri(tokenId)
-#     return (tokenURI)
-# end
-
+@view
+func tokenURI{
+        syscall_ptr: felt*,
+        pedersen_ptr: HashBuiltin*,
+        range_check_ptr
+    }(tokenId: Uint256) -> (tokenURI: felt):
+    let (tokenURI) = ERC721.token_uri(tokenId)
+    return (tokenURI)
+end
 
 @external
 func approve{
@@ -146,72 +204,3 @@ func safeTransferFrom{
     ERC721.safe_transfer_from(from_, to, tokenId, data_len, data)
     return ()
 end
-
-
-
-
-
-
-func mint{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(to: felt, tokenId: Uint256):
-    ERC721._mint(to, tokenId)
-    return ()
-end
-
-@storage_var
-func tokenId_high() -> (res : felt):
-end
-
-func leaf{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(account: felt, tokenId: Uint256) -> (pedersen_hash: felt):
-
-    # let tokenId_felt = tokenId.low + tokenId.high * 2 ** 128  (not working: issues coming from Hardhat plugin)
-    tokenId_high.write(tokenId.high * 2 ** 128)
-    let (high) = tokenId_high.read()
-    let tokenId_felt = high + tokenId.low
-    let (pedersen_hash) = hash2{hash_ptr=pedersen_ptr}(tokenId_felt, account)
-
-    return (pedersen_hash)
-end
-
-func verify{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
-    }(proof_len: felt, proof: felt*, leaf: felt, proof_idx: felt, leaf_idx: felt):
-
-    if proof_len == 0:
-        let (root) = merkle_root.read()
-        with_attr error_message("Computed root is not valid ..."):
-            assert root = leaf
-        end
-        return ()
-    end
-
-    let (dividend, remainder) = unsigned_div_rem(leaf_idx, 2)
-    if remainder == 0:
-        let (hash) = hash2{hash_ptr=pedersen_ptr}(leaf, proof[proof_idx])
-    else:
-        let (hash) = hash2{hash_ptr=pedersen_ptr}(proof[proof_idx], leaf)
-    end
-
-    verify(proof_len=proof_len-1, proof=proof, leaf=hash, proof_idx=proof_idx+1, leaf_idx=dividend)
-
-    return ()
-end
-
-@external
-func redeem{
-        syscall_ptr: felt*,
-        pedersen_ptr: HashBuiltin*,
-        range_check_ptr
-    }(proof_len: felt, proof: felt*, account: felt, tokenId: Uint256, leaf_idx: felt): 
-
-    let (hash) = leaf(account, tokenId)
-    verify(proof_len=proof_len, proof=proof, leaf=hash, proof_idx=0, leaf_idx=leaf_idx)
-    mint(to=account, tokenId=tokenId)
-    return ()
-end
-
-
-
